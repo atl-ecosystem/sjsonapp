@@ -14,8 +14,7 @@ libraryDependencies <++= scalaVersion { scalaVersion =>
     "net.databinder"       % "dispatch-json_2.9.1"    % "0.8.7"            % "compile",
     "log4j"                % "log4j"                  % "1.2.16"           % "provided",
     "junit"                % "junit"                  % "4.8.1"            % "test",
-    "org.scalatest"        %% "scalatest"             % "1.6.1"            % "test",
-    "org.scalaz"           %% "scalaz-core"           % "6.0.4"
+    "org.scalatest"        %% "scalatest"             % "1.6.1"            % "test"
   )
 }
 

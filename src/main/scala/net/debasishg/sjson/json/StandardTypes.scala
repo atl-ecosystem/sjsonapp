@@ -42,7 +42,7 @@ trait BasicTypes extends Protocol {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
           }
-        case _ => ("Tuple" + 2 + " expected").fail.liftFailNel
+        case _ => ("Tuple" + 2 + " expected").fail.toValidationNel
       }
   }
   implicit def tuple3Format[T1,T2,T3](implicit 
@@ -70,7 +70,7 @@ trait BasicTypes extends Protocol {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
           }
-        case _ => ("Tuple" + 3 + " expected").fail.liftFailNel
+        case _ => ("Tuple" + 3 + " expected").fail.toValidationNel
       }
   }
   implicit def tuple4Format[T1,T2,T3,T4](implicit 
@@ -100,7 +100,7 @@ trait BasicTypes extends Protocol {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
           }
-        case _ => ("Tuple" + 4 + " expected").fail.liftFailNel
+        case _ => ("Tuple" + 4 + " expected").fail.toValidationNel
       }
   }
   implicit def tuple5Format[T1,T2,T3,T4,T5](implicit 
@@ -132,7 +132,7 @@ trait BasicTypes extends Protocol {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
           }
-        case _ => ("Tuple" + 5 + " expected").fail.liftFailNel
+        case _ => ("Tuple" + 5 + " expected").fail.toValidationNel
       }
   }
   implicit def tuple6Format[T1,T2,T3,T4,T5,T6](implicit 
@@ -166,7 +166,7 @@ trait BasicTypes extends Protocol {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
           }
-        case _ => ("Tuple" + 6 + " expected").fail.liftFailNel
+        case _ => ("Tuple" + 6 + " expected").fail.toValidationNel
       }
   }
 }
@@ -181,7 +181,7 @@ trait CollectionTypes extends BasicTypes with Generic {
       }
     def reads(json: JsValue) = json match {
       case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]
-      case _ => "List expected".fail.liftFailNel
+      case _ => "List expected".fail.toValidationNel
     }
   }
 
@@ -193,7 +193,7 @@ trait CollectionTypes extends BasicTypes with Generic {
       }
     def reads(json: JsValue) = json match {
       case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]
-      case _ => "Seq expected".fail.liftFailNel
+      case _ => "Seq expected".fail.toValidationNel
     }
   }
 
@@ -206,7 +206,7 @@ trait CollectionTypes extends BasicTypes with Generic {
       }
     def reads(json: JsValue) = json match {
       case JsArray(ts) => (ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]).map(listToArray(_))
-      case _ => "Array expected".fail.liftFailNel
+      case _ => "Array expected".fail.toValidationNel
     }
   }
 
@@ -227,7 +227,7 @@ trait CollectionTypes extends BasicTypes with Generic {
         val Success(values) =
           m.map{ case (k, v) => fromjson[V](v)(fmtv)}.toList.sequence[({type λ[α]=ValidationNEL[String, α]})#λ, V]
         (Map() ++ (keys zip values)).success[NonEmptyList[String]]
-      case _ => "Map expected".fail.liftFailNel
+      case _ => "Map expected".fail.toValidationNel
     }
   }
 
@@ -252,7 +252,7 @@ trait StandardTypes extends CollectionTypes {
     def writes(o: BigInt) = JsValue.apply(o).success
     def reads(json: JsValue) = json match {
       case JsNumber(n) => n.toBigInt.success
-      case _ => "BigInt expected".fail.liftFailNel
+      case _ => "BigInt expected".fail.toValidationNel
     }
   }
 
@@ -260,7 +260,7 @@ trait StandardTypes extends CollectionTypes {
     def writes(o: BigDecimal) = JsValue.apply(o).success
     def reads(json: JsValue) = json match {
       case JsNumber(n) => n.success
-      case _ => "BigDecimal expected".fail.liftFailNel
+      case _ => "BigDecimal expected".fail.toValidationNel
     }
   }
 }
