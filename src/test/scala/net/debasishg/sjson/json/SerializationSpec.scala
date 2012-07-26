@@ -120,7 +120,7 @@ class SerializationSpec extends Spec with ShouldMatchers {
       val me = Me("debasish", "ghosh", 30, "1050/2", "survey park", "700075")
       val json = tojson(me)
 
-      type VA[A] = ValidationNEL[String, A]
+      type VA[+A] = ValidationNEL[String, A]
       implicit def G[E] = Validation.validationMonad[E]
 
       field[Int]("age", json.toOption.get, 
