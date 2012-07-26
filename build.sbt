@@ -2,7 +2,7 @@ name := "sjsonapp"
 
 organization := "net.debasishg"
 
-version := "0.1"
+version := "0.2"
 
 crossScalaVersions := Seq("2.9.1", "2.9.0", "2.8.1", "2.8.0")
 
@@ -14,7 +14,8 @@ libraryDependencies <++= scalaVersion { scalaVersion =>
     "net.databinder"       % "dispatch-json_2.9.1"    % "0.8.7"            % "compile",
     "log4j"                % "log4j"                  % "1.2.16"           % "provided",
     "junit"                % "junit"                  % "4.8.1"            % "test",
-    "org.scalatest"        %% "scalatest"             % "1.6.1"            % "test"
+    "org.scalatest"        %% "scalatest"             % "1.6.1"            % "test",
+    "org.scalaz"           % "scalaz-core_2.9.2"      % "7.0.0-M1"         % "compile"    
   )
 }
 
