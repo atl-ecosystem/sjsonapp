@@ -5,7 +5,7 @@ package json
 import scalaz._
 import Scalaz._
 
-import dispatch.json._
+import dispatch.classic.json._
 import JsonSerialization._
 
 trait BasicTypes extends Protocol {
@@ -16,7 +16,7 @@ trait BasicTypes extends Protocol {
     }
     def reads(json: JsValue) = json match {
       case JsNull => None.success
-      case x => some(fromjson[T](x)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]
+      case x => some(fromjson[T](x)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, T]
     }
   }
     implicit def tuple2Format[T1,T2](implicit 
@@ -37,7 +37,7 @@ trait BasicTypes extends Protocol {
 ) = tuple match {
         case (t1,t2) => 
           val l = List(
-      tojson(t1)(fmt1),tojson(t2)(fmt2)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue]
+      tojson(t1)(fmt1),tojson(t2)(fmt2)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue]
           l match {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
@@ -65,7 +65,7 @@ trait BasicTypes extends Protocol {
 ) = tuple match {
         case (t1,t2,t3) => 
           val l = List(
-      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue]
+      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue]
           l match {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
@@ -95,7 +95,7 @@ trait BasicTypes extends Protocol {
 ) = tuple match {
         case (t1,t2,t3,t4) => 
           val l = List(
-      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue]
+      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue]
           l match {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
@@ -127,7 +127,7 @@ trait BasicTypes extends Protocol {
 ) = tuple match {
         case (t1,t2,t3,t4,t5) => 
           val l = List(
-      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4),tojson(t5)(fmt5)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue]
+      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4),tojson(t5)(fmt5)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue]
           l match {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
@@ -161,7 +161,7 @@ trait BasicTypes extends Protocol {
 ) = tuple match {
         case (t1,t2,t3,t4,t5,t6) => 
           val l = List(
-      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4),tojson(t5)(fmt5),tojson(t6)(fmt6)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue]
+      tojson(t1)(fmt1),tojson(t2)(fmt2),tojson(t3)(fmt3),tojson(t4)(fmt4),tojson(t5)(fmt5),tojson(t6)(fmt6)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue]
           l match {
             case Success(js) => JsArray(js).success
             case Failure(errs) => errs.fail 
@@ -175,24 +175,24 @@ trait CollectionTypes extends BasicTypes with Generic {
 
   implicit def listFormat[T](implicit fmt : Format[T]) : Format[List[T]] = new Format[List[T]] {
     def writes(ts: List[T]) =
-      ts.map(t => tojson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue] match {
+      ts.map(t => tojson(t)(fmt)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue] match {
         case Success(js) => JsArray(js).success
         case Failure(errs) => errs.fail
       }
     def reads(json: JsValue) = json match {
-      case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]
+      case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, T]
       case _ => "List expected".fail.toValidationNel
     }
   }
 
   implicit def seqFormat[T](implicit fmt : Format[T]) : Format[Seq[T]] = new Format[Seq[T]] {
     def writes(ts: Seq[T]) =
-      ts.toList.map(t => tojson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue] match {
+      ts.toList.map(t => tojson(t)(fmt)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue] match {
         case Success(js) => JsArray(js).success
         case Failure(errs) => errs.fail
       }
     def reads(json: JsValue) = json match {
-      case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]
+      case JsArray(ts) => ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, T]
       case _ => "Seq expected".fail.toValidationNel
     }
   }
@@ -200,12 +200,12 @@ trait CollectionTypes extends BasicTypes with Generic {
   import scala.reflect.Manifest
   implicit def arrayFormat[T](implicit fmt : Format[T], mf: Manifest[T]) : Format[Array[T]] = new Format[Array[T]] {
     def writes(ts: Array[T]) =
-      ts.map(t => tojson(t)(fmt)).toList.sequence[({type λ[α]=ValidationNEL[String, α]})#λ, JsValue] match {
+      ts.map(t => tojson(t)(fmt)).toList.sequence[({type λ[α]=ValidationNel[String, α]})#λ, JsValue] match {
         case Success(js) => JsArray(js).success
         case Failure(errs) => errs.fail
       }
     def reads(json: JsValue) = json match {
-      case JsArray(ts) => (ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, T]).map(listToArray(_))
+      case JsArray(ts) => (ts.map(t => fromjson(t)(fmt)).sequence[({type λ[α]=ValidationNel[String, α]})#λ, T]).map(listToArray(_))
       case _ => "Array expected".fail.toValidationNel
     }
   }
@@ -216,16 +216,16 @@ trait CollectionTypes extends BasicTypes with Generic {
     def writes(ts: Map[K, V]) =
       ts.map{ case(k, v) =>
         (tojson(k.toString) <|*|> tojson(v)(fmtv))
-      }.toList.sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      }.toList.sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] match {
         case Success(kvs) => JsObject(kvs.map{case (key, value) => (key.asInstanceOf[JsString], value)}).success
         case Failure(errs) => errs.fail
       }
     def reads(json: JsValue) = json match {
       case JsObject(m) =>
         val Success(keys) =
-          m.map{ case (k, v) => fromjson[K](k)(fmtk)}.toList.sequence[({type λ[α]=ValidationNEL[String, α]})#λ, K]
+          m.map{ case (k, v) => fromjson[K](k)(fmtk)}.toList.sequence[({type λ[α]=ValidationNel[String, α]})#λ, K]
         val Success(values) =
-          m.map{ case (k, v) => fromjson[V](v)(fmtv)}.toList.sequence[({type λ[α]=ValidationNEL[String, α]})#λ, V]
+          m.map{ case (k, v) => fromjson[V](v)(fmtv)}.toList.sequence[({type λ[α]=ValidationNel[String, α]})#λ, V]
         (Map() ++ (keys zip values)).success[NonEmptyList[String]]
       case _ => "Map expected".fail.toValidationNel
     }

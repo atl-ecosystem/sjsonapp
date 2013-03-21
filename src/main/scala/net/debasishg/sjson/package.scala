@@ -4,7 +4,7 @@ package sjson
 import scalaz._
 import Scalaz._
 
-import dispatch.json._
+import dispatch.classic.json._
 import sjson.json.JsonSerialization._
 
 package object json {

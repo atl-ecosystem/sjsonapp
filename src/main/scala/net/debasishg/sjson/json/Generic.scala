@@ -5,11 +5,11 @@ package json
 import scalaz._
 import Scalaz._
 
-import dispatch.json._
+import dispatch.classic.json._
 trait Generic extends Protocol {
 
   import JsonSerialization._
-  import DefaultProtocol._
+  import DefaultProtocol.field
 
   implicit def listFormat[T](implicit fmt : Format[T]) : Format[List[T]];
 
@@ -35,18 +35,18 @@ trait Generic extends Protocol {
    * </pre>
    */
   def wrap[S, T](name: String)(to : S => T, from : T => S)(implicit fmt : Format[T]) = new Format[S]{
-    def writes(s : S) = (tojson(name) <|*|> tojson(to(s))) match {
-      case Success((k, v)) => JsObject(Map() ++ List((k.asInstanceOf[JsString], v))).success
-      case Failure(errs) => errs.fail
+    def writes(s : S) = (tojson(name) tuple tojson(to(s))) match {
+      case Success((k, v)) => JsObject(List((k.asInstanceOf[JsString], v)).toMap).success
+      case Failure(errs) => errs.failure
     }
     def reads(js : JsValue) = js match {
       case m@JsObject(_) =>
         val f = field[T](name, m)
         f match {
           case Success(v) => from(v).success
-          case Failure(e) => e.fail
+          case Failure(e) => e.failure
         }
-      case _ => "Object expected".fail.toValidationNel
+      case _ => "Object expected".failureNel
     }
   }
 
@@ -63,10 +63,11 @@ trait Generic extends Protocol {
   def asProduct2[S, T1,T2](f1: String,f2: String)(apply : (T1,T2) => S)(unapply : S => Product2[T1,T2])(implicit bin1: Format[T1],bin2: Format[T2]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -84,11 +85,12 @@ trait Generic extends Protocol {
   def asProduct3[S, T1,T2,T3](f1: String,f2: String,f3: String)(apply : (T1,T2,T3) => S)(unapply : S => Product3[T1,T2,T3])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -107,12 +109,13 @@ trait Generic extends Protocol {
   def asProduct4[S, T1,T2,T3,T4](f1: String,f2: String,f3: String,f4: String)(apply : (T1,T2,T3,T4) => S)(unapply : S => Product4[T1,T2,T3,T4])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3],bin4: Format[T4]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3),
-          tojson(f4) <|*|> tojson(product._4)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3),
+          tojson(f4) tuple tojson(product._4)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -132,13 +135,14 @@ trait Generic extends Protocol {
   def asProduct5[S, T1,T2,T3,T4,T5](f1: String,f2: String,f3: String,f4: String,f5: String)(apply : (T1,T2,T3,T4,T5) => S)(unapply : S => Product5[T1,T2,T3,T4,T5])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3],bin4: Format[T4],bin5: Format[T5]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3),
-          tojson(f4) <|*|> tojson(product._4),
-          tojson(f5) <|*|> tojson(product._5)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3),
+          tojson(f4) tuple tojson(product._4),
+          tojson(f5) tuple tojson(product._5)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -159,14 +163,15 @@ trait Generic extends Protocol {
   def asProduct6[S, T1,T2,T3,T4,T5,T6](f1: String,f2: String,f3: String,f4: String,f5: String,f6: String)(apply : (T1,T2,T3,T4,T5,T6) => S)(unapply : S => Product6[T1,T2,T3,T4,T5,T6])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3],bin4: Format[T4],bin5: Format[T5],bin6: Format[T6]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3),
-          tojson(f4) <|*|> tojson(product._4),
-          tojson(f5) <|*|> tojson(product._5),
-          tojson(f6) <|*|> tojson(product._6)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3),
+          tojson(f4) tuple tojson(product._4),
+          tojson(f5) tuple tojson(product._5),
+          tojson(f6) tuple tojson(product._6)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -188,15 +193,16 @@ trait Generic extends Protocol {
   def asProduct7[S, T1,T2,T3,T4,T5,T6,T7](f1: String,f2: String,f3: String,f4: String,f5: String,f6: String,f7: String)(apply : (T1,T2,T3,T4,T5,T6,T7) => S)(unapply : S => Product7[T1,T2,T3,T4,T5,T6,T7])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3],bin4: Format[T4],bin5: Format[T5],bin6: Format[T6],bin7: Format[T7]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3),
-          tojson(f4) <|*|> tojson(product._4),
-          tojson(f5) <|*|> tojson(product._5),
-          tojson(f6) <|*|> tojson(product._6),
-          tojson(f7) <|*|> tojson(product._7)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3),
+          tojson(f4) tuple tojson(product._4),
+          tojson(f5) tuple tojson(product._5),
+          tojson(f6) tuple tojson(product._6),
+          tojson(f7) tuple tojson(product._7)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
           JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
         case Failure(errs) => errs.fail
@@ -219,19 +225,20 @@ trait Generic extends Protocol {
   def asProduct8[S, T1,T2,T3,T4,T5,T6,T7,T8](f1: String,f2: String,f3: String,f4: String,f5: String,f6: String,f7: String,f8: String)(apply : (T1,T2,T3,T4,T5,T6,T7,T8) => S)(unapply : S => Product8[T1,T2,T3,T4,T5,T6,T7,T8])(implicit bin1: Format[T1],bin2: Format[T2],bin3: Format[T3],bin4: Format[T4],bin5: Format[T5],bin6: Format[T6],bin7: Format[T7],bin8: Format[T8]) = new Format[S]{
     def writes(s: S) = {
       val product = unapply(s)
-      List(
-          tojson(f1) <|*|> tojson(product._1),
-          tojson(f2) <|*|> tojson(product._2),
-          tojson(f3) <|*|> tojson(product._3),
-          tojson(f4) <|*|> tojson(product._4),
-          tojson(f5) <|*|> tojson(product._5),
-          tojson(f6) <|*|> tojson(product._6),
-          tojson(f7) <|*|> tojson(product._7),
-          tojson(f8) <|*|> tojson(product._8)
-      ).sequence[({type λ[α]=ValidationNEL[String, α]})#λ, (JsValue, JsValue)] match {
+      val vs: ValidationNel[String, List[(JsValue, JsValue)]] = List(
+          tojson(f1) tuple tojson(product._1),
+          tojson(f2) tuple tojson(product._2),
+          tojson(f3) tuple tojson(product._3),
+          tojson(f4) tuple tojson(product._4),
+          tojson(f5) tuple tojson(product._5),
+          tojson(f6) tuple tojson(product._6),
+          tojson(f7) tuple tojson(product._7),
+          tojson(f8) tuple tojson(product._8)
+      ).sequence[({type λ[α]=ValidationNel[String, α]})#λ, (JsValue, JsValue)] 
+      vs match {
         case Success(kvs) => 
-          JsObject(Map.empty[JsString, JsValue] ++ kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}).success
-        case Failure(errs) => errs.fail
+          JsObject(kvs.map{case (k, v) => (k.asInstanceOf[JsString], v)}.toMap).success
+        case Failure(errs) => errs.failure
       }
     }
     def reads(js: JsValue) = js match {

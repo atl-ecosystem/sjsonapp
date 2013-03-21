@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import scalaz._
 import Scalaz._
 
-import dispatch.json._
+import dispatch.classic.json._
 import JsonSerialization._
 import DefaultProtocol._
 
@@ -133,7 +133,7 @@ class TypeclassSpec extends Spec
         }
         yield(fn |@| ln |@| no |@| st |@| zp)
       val err = x(json.toOption.get) {(f, l, n, s, z) => Me(f, l, n, s, z)}
-      err.fail.toOption.get.list should equal(List("field firstname not found", "field lastname not found"))
+      err.swap.toOption.get.toList should equal(List("field firstname not found", "field lastname not found"))
     }
   }
 }
